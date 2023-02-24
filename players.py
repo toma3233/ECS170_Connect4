@@ -74,11 +74,163 @@ class stupidAI(connect4Player):
 			move[:] = [6]
 		else:
 			move[:] = [0]
+		
+		print("EVAL: " + str(self.eval(env)))
+
+	def eval(self, env):
+		my_fours = self.checkForStreak(env.board, env.turnPlayer.position, 3)
+		my_threes = self.checkForStreak(env.board, env.turnPlayer.position, 2)
+		my_twos = self.checkForStreak(env.board, env.turnPlayer.position, 1)
+		comp_fours = self.checkForStreak(env.board, env.turnPlayer.opponent.position, 3)
+		comp_threes = self.checkForStreak(env.board, env.turnPlayer.opponent.position, 2)
+		comp_twos = self.checkForStreak(env.board, env.turnPlayer.opponent.position, 1)
+		return (my_fours * 10 + my_threes * 5 + my_twos * 2) - (comp_fours * 10 + comp_threes * 5 + comp_twos * 2)
+
+	def checkForStreak(self, board, player, streak):
+		count = 0
+		for i in range(6):
+			for j in range(7):
+				if board[i][j] == player:
+					count += self.verticalStreak(i, j, board, streak)
+					# count += self.horizontalStreak(i, j, board, streak)
+					# count += self.diagonalCheck(i, j, board, streak)
+		return count
+
+	def verticalStreak(self, row, column, state, streak):
+		consecutiveCount = 0
+		k = row + 1
+		while (k < 6):
+			if state[k][column] == state[row][column]:
+				consecutiveCount += 1
+			k += 1
+		for i in range(row - 1, -1, -1):
+			if state[i][column] == state[row][column]:
+				consecutiveCount += 1
+				# print("state[" + str(i) + "][" + str(column) + "] = " + str(state[i][column]) + " con count: " + str(consecutiveCount))
+			else:
+				break
+		if consecutiveCount == streak:
+			print("Found streak for " + str(streak) + " with consecutive count " + str(consecutiveCount) + " Player: " + str(state[row][column]))
+			return 1
+		else:
+			return 0
+
+	def horizontalStreak(self, row, column, state, streak):
+		count = 0
+		for j in range(column, 7):
+			if state[row][j] == state[row][column]:
+				count += 1
+			else:
+				break
+		if count >= streak:
+			return 1
+		else:
+			return 0
+
+	def diagonalCheck(self, row, column, state, streak):
+		total = 0
+		count = 0
+		j = column
+		for i in range(row, 6):
+			if j > 6:
+				break
+			elif state[i][j] == state[row][column]:
+				count += 1
+			else:
+				break
+			j += 1
+		if count >= streak:
+			total += 1
+		count = 0
+		j = column
+		for i in range(row, -1, -1):
+			if j > 6:
+				break
+			elif state[i][j] == state[row][column]:
+				count += 1
+			else:
+				break
+			j += 1
+		if count >= streak:
+			total += 1
+		return total
 
 class minimaxAI(connect4Player):
 
 	def play(self, env, move):
 		pass
+
+	def eval(self, env):
+		my_fours = self.checkForStreak(env.board, env.turnPlayer.position, 4)
+		my_threes = self.checkForStreak(env.board, env.turnPlayer.position, 3)
+		my_twos = self.checkForStreak(env.board, env.turnPlayer.position, 2)
+		comp_fours = self.checkForStreak(env.board, env.turnPlayer.position, 4)
+		comp_threes = self.checkForStreak(env.board, env.turnPlayer.position, 3)
+		comp_twos = self.checkForStreak(env.board, env.turnPlayer.position, 2)
+		return (my_fours * 10 + my_threes * 5 + my_twos * 2) - (comp_fours * 10 + comp_threes * 5 + comp_twos * 2)
+
+	def checkForStreak(self, board, player, streak):
+		count = 0
+		for i in range(6):
+			for j in range(7):
+				if board[i][j] == player:
+					count += self.verticalStreak(i, j, board, streak)
+					count += self.horizontalStreak(i, j, board, streak)
+					count += self.diagonalCheck(i, j, board, streak)
+		return count
+
+	def verticalStreak(self, row, column, state, streak):
+		consecutiveCount = 0
+		for i in range(row, 6):
+			if state[i][column] == state[row][column]:
+				consecutiveCount += 1
+			else:
+				break
+		if consecutiveCount >= streak:
+			return 1
+		else:
+			return 0
+
+	def horizontalStreak(self, row, column, state, streak):
+		count = 0
+		for j in range(column, 7):
+			if state[row][j] == state[row][column]:
+				count += 1
+			else:
+				break
+		if count >= streak:
+			return 1
+		else:
+			return 0
+
+	def diagonalCheck(self, row, column, state, streak):
+		total = 0
+		count = 0
+		j = column
+		for i in range(row, 6):
+			if j > 6:
+				break
+			elif state[i][j] == state[row][column]:
+				count += 1
+			else:
+				break
+			j += 1
+		if count >= streak:
+			total += 1
+		count = 0
+		j = column
+		for i in range(row, -1, -1):
+			if j > 6:
+				break
+			elif state[i][j] == state[row][column]:
+				count += 1
+			else:
+				break
+			j += 1
+		if count >= streak:
+			total += 1
+		return total
+
 
 class alphaBetaAI(connect4Player):
 

@@ -62,8 +62,6 @@ class stupidAI(connect4Player):
 		possible = env.topPosition >= 0
 		indices = []
 
-		# print(self.eval(env.board, env.turnPlayer))
-
 		for i, p in enumerate(possible):
 			if p: indices.append(i)
 		if 3 in indices:
@@ -79,26 +77,6 @@ class stupidAI(connect4Player):
 		else:
 			move[:] = [0]
 
-	# def eval(self, board, player):
-	# 	weights = [
-	# 		[5, 10, 15, 20, 15, 10, 5],
-	# 		[10, 15, 20, 25, 20, 15, 10],
-	# 		[15, 20, 25, 30, 25, 20, 15],
-	# 		[15, 20, 25, 30, 25, 20, 15],
-	# 		[10, 15, 20, 25, 20, 15, 10],
-	# 		[5, 10, 15, 20, 15, 10, 5]
-	# 	]
-
-	# 	count = 0
-	# 	for row in range(6):
-	# 		for col in range(7):
-	# 			if(board[row][col] == player.position):
-	# 				count += (weights[row][col])
-	# 			elif(board[row][col] == player.opponent.position):
-	# 				count -= (weights[row][col])
-		
-	# 	return count
-
 class minimaxAI(connect4Player):
 
 	def play(self, env, move):
@@ -109,22 +87,12 @@ class minimaxAI(connect4Player):
 		for i, p in enumerate(possible):
 			if p: indices.append(i)
 		
-		# print('Indices: ', indices)
-		# print('PRINTING SIMULATED MOVES\n-------------------------------------')
-		# payoffs = []
 		for play in indices:
 			simulated_move = self.simulateMove(env.getEnv(), play, env.turnPlayer)
-			# print('\nPLAY: ', play)
-			# print()
-			# print(simulated_move.board)
 			result = self.min_val(simulated_move, env.turnPlayer.opponent, 3, 1) 
-			# payoffs.append(result)
-			# print('RESULT: ', result)
 			if(result > v):
 				move[:] = [play]
 				v = result
-
-		# print('PAYOFFS: ', payoffs)
 
 	def simulateMove(self, env, column_move, player):
 		env.board[env.topPosition[column_move]][column_move] = player.position
@@ -135,8 +103,6 @@ class minimaxAI(connect4Player):
 	def min_val(self, env, player, target_depth, current_depth):
 		opponent_position = player.opponent.position - 1
 		if(len(env.history[opponent_position]) > 0 and env.gameOver(env.history[opponent_position][len(env.history[opponent_position]) - 1], player.opponent.position)):
-			# print('FOUND MAX WINNING POSITION')
-			# print(env.board)
 			return 10000 * (target_depth - current_depth + 1)
 		
 		if(target_depth == current_depth):
@@ -159,8 +125,6 @@ class minimaxAI(connect4Player):
 	def max_val(self, env, player, target_depth, current_depth):
 		opponent_position = player.opponent.position - 1
 		if(len(env.history[opponent_position]) > 0 and env.gameOver(env.history[opponent_position][len(env.history[opponent_position]) - 1], player.opponent.position)):
-			# print('FOUND MIN WINNING POSITION')
-			# print(env.board)
 			return -10000 * (target_depth - current_depth + 1)
 
 		if(target_depth == current_depth):
@@ -174,8 +138,6 @@ class minimaxAI(connect4Player):
 
 		for play in indices:
 			simulated_move = self.simulateMove(env.getEnv(), play, player)
-			# if(simulated_move.gameOver(play, simulated_move.turnPlayer.position)):
-			# 	return 10000
 			result = self.min_val(simulated_move, player.opponent, target_depth, current_depth + 1)
 			if(result > v):
 				v = result
@@ -183,13 +145,21 @@ class minimaxAI(connect4Player):
 		return v
 
 	def eval(self, board, player):
+		# weights = [
+		# 	[5, 10, 15, 20, 15, 10, 5],
+		# 	[10, 15, 20, 25, 20, 15, 10],
+		# 	[15, 20, 25, 30, 25, 20, 15],
+		# 	[15, 20, 25, 30, 25, 20, 15],
+		# 	[10, 15, 20, 25, 20, 15, 10],
+		# 	[5, 10, 15, 20, 15, 10, 5]
+		# ]
 		weights = [
-			[5, 10, 15, 20, 15, 10, 5],
-			[10, 15, 20, 25, 20, 15, 10],
-			[15, 20, 25, 30, 25, 20, 15],
-			[15, 20, 25, 30, 25, 20, 15],
-			[10, 15, 20, 25, 20, 15, 10],
-			[5, 10, 15, 20, 15, 10, 5]
+      [10, 15, 20, 25, 20, 15, 10],
+      [15, 20, 30, 35, 30, 20, 15],
+      [20, 25, 30, 40, 30, 25, 20],
+      [20, 25, 30, 40, 30, 25, 20],
+      [20, 25, 35, 45, 35, 25, 20],
+      [15, 30, 45, 50, 45, 30, 15],
 		]
 
 		count = 0
@@ -206,8 +176,177 @@ class minimaxAI(connect4Player):
 class alphaBetaAI(connect4Player):
 
 	def play(self, env, move):
-		pass
+		v = -math.inf
 
+		possible = env.topPosition >= 0
+		indices = []
+
+		for i, p in enumerate(possible):
+			if p: 
+				indices.append(i)
+
+		random.shuffle(indices)
+		for play in indices:
+			simulated_move = self.simulateMove(env.getEnv(), play, env.turnPlayer)
+			result = self.min_val(simulated_move, env.turnPlayer.opponent, 2, 1, -math.inf, math.inf) 
+			if(result > v):
+				move[:] = [play]
+				v = result
+
+	def simulateMove(self, env, column_move, player):
+		env.board[env.topPosition[column_move]][column_move] = player.position
+		env.topPosition[column_move] -= 1
+		env.history[int(player.position) - 1].append(column_move)
+		return env
+
+	def min_val(self, env, player, target_depth, current_depth, alpha, beta):
+		opponent_position = player.opponent.position - 1
+		if(len(env.history[opponent_position]) > 0 and env.gameOver(env.history[opponent_position][len(env.history[opponent_position]) - 1], player.opponent.position)):
+			return 10000 * (target_depth - current_depth + 1)
+		
+		if(target_depth == current_depth):
+			return -1 * self.eval(env.board, player)
+
+		v = math.inf
+		possible = env.topPosition >= 0
+		indices = []
+
+		
+		for i, p in enumerate(possible):
+			if p: 
+				indices.append(i)
+
+		random.shuffle(indices)
+		for play in indices:
+			simulated_move = self.simulateMove(env.getEnv(), play, player)
+			result = self.max_val(simulated_move, player.opponent, target_depth, current_depth + 1, alpha, beta)
+			if(result < v):
+				v = result
+
+			if(v <= alpha):
+				return v
+			
+			beta = min(beta, v)
+		
+		return v
+
+	def max_val(self, env, player, target_depth, current_depth, alpha, beta):
+		opponent_position = player.opponent.position - 1
+		if(len(env.history[opponent_position]) > 0 and env.gameOver(env.history[opponent_position][len(env.history[opponent_position]) - 1], player.opponent.position)):
+			return -10000 * (target_depth - current_depth + 1)
+
+		if(target_depth == current_depth):
+			return self.eval(env.board, player)
+
+		v = -math.inf
+		possible = env.topPosition >= 0
+		indices = []
+
+		for i, p in enumerate(possible):
+			if p: 
+				indices.append(i)
+
+		random.shuffle(indices)
+		for play in indices:
+			simulated_move = self.simulateMove(env.getEnv(), play, player)
+			result = self.min_val(simulated_move, player.opponent, target_depth, current_depth + 1, alpha, beta)
+			if(result > v):
+				v = result
+
+			if(v >= beta):
+				return v
+			
+			alpha = max(alpha, v)
+		
+		return v
+
+	def eval(self, board, player):
+		# weights = [
+		# 	[5, 10, 15, 20, 15, 10, 5],
+		# 	[10, 15, 20, 25, 20, 15, 10],
+		# 	[15, 20, 25, 30, 25, 20, 15],
+		# 	[15, 20, 25, 30, 25, 20, 15],
+		# 	[10, 15, 20, 25, 20, 15, 10],
+		# 	[5, 10, 15, 20, 15, 10, 5]
+		# ]
+
+	# 	weights = [
+    #   [10, 15, 20, 25, 20, 15, 10],
+    #   [15, 20, 30, 35, 30, 20, 15],
+    #   [20, 25, 30, 40, 30, 25, 20],
+    #   [20, 25, 30, 40, 30, 25, 20],
+    #   [20, 25, 35, 45, 35, 25, 20],
+    #   [15, 30, 45, 50, 45, 30, 15],
+	# 	]
+
+	# 	count = 0
+	# 	for row in range(6):
+	# 		for col in range(7):
+	# 			if(board[row][col] == player.position):
+	# 				count += (weights[row][col])
+	# 			elif(board[row][col] == player.opponent.position):
+	# 				count -= (weights[row][col])
+		
+	# 	return count
+		score = 0
+
+		# Score centre column
+		centre_array = [int(i) for i in list(board[:, COLUMN_COUNT // 2])]
+		centre_count = centre_array.count(player.position)
+		score += centre_count * 3
+
+		# Score horizontal positions
+		for r in range(ROW_COUNT):
+			row_array = [int(i) for i in list(board[r, :])]
+			for c in range(COLUMN_COUNT - 3):
+				# Create a horizontal window of 4
+				window = row_array[c:c + 4]
+				score += self.evaluate_window(window, player.position, player.opponent.position)
+
+		# Score vertical positions
+		for c in range(COLUMN_COUNT):
+			col_array = [int(i) for i in list(board[:, c])]
+			for r in range(ROW_COUNT - 3):
+				# Create a vertical window of 4
+				window = col_array[r:r + 4]
+				score += self.evaluate_window(window, player.position, player.opponent.position)
+
+		# Score positive diagonals
+		for r in range(ROW_COUNT - 3):
+			for c in range(COLUMN_COUNT - 3):
+				# Create a positive diagonal window of 4
+				window = [board[r + i][c + i] for i in range(4)]
+				score += self.evaluate_window(window, player.position, player.opponent.position)
+
+		# Score negative diagonals
+		for r in range(ROW_COUNT - 3):
+			for c in range(COLUMN_COUNT - 3):
+				# Create a negative diagonal window of 4
+				window = [board[r + 3 - i][c + i] for i in range(4)]
+				score += self.evaluate_window(window, player.position, player.opponent.position)
+
+		return score
+
+	def evaluate_window(self, window, piece, opp_piece):
+		score = 0
+		
+		# Prioritise a winning move
+		# Minimax makes this less important
+		if window.count(piece) == 4:
+			score += 100
+		# Make connecting 3 second priority
+		elif window.count(piece) == 3 and window.count(0) == 1:
+			score += 5
+		# Make connecting 2 third priority
+		elif window.count(piece) == 2 and window.count(0) == 2:
+			score += 2
+		# Prioritise blocking an opponent's winning move (but not over bot winning)
+		# Minimax makes this less important
+		if window.count(opp_piece) == 3 and window.count(0) == 1:
+			score -= 4
+
+		return score
+ 
 
 SQUARESIZE = 100
 BLUE = (0,0,255)

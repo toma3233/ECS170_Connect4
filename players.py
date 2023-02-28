@@ -97,16 +97,16 @@ class minimaxAI(connect4Player):
 	def simulateMove(self, env, column_move, player):
 		env.board[env.topPosition[column_move]][column_move] = player.position
 		env.topPosition[column_move] -= 1
-		env.history[int(player.position) - 1].append(column_move)
+		env.history[player.position - 1].append(column_move)
 		return env
 
-	def min_val(self, env, player, target_depth, current_depth):
+	def min_val(self, env, player, target_depth, curr_depth):
 		opponent_position = player.opponent.position - 1
 		if(len(env.history[opponent_position]) > 0 and env.gameOver(env.history[opponent_position][len(env.history[opponent_position]) - 1], player.opponent.position)):
-			return 10000 * (target_depth - current_depth + 1)
+			return 6900 * (target_depth - curr_depth + 1)
 		
-		if(target_depth == current_depth):
-			return -1 * self.eval(env.board, player)
+		if(target_depth == curr_depth):
+			return -1 * self.evaluation_func(env.board, player)
 
 		v = math.inf
 		possible = env.topPosition >= 0
@@ -116,19 +116,19 @@ class minimaxAI(connect4Player):
 
 		for play in indices:
 			simulated_move = self.simulateMove(env.getEnv(), play, player)
-			result = self.max_val(simulated_move, player.opponent, target_depth, current_depth + 1)
+			result = self.max_val(simulated_move, player.opponent, target_depth, curr_depth + 1)
 			if(result < v):
 				v = result
 		
 		return v
 
-	def max_val(self, env, player, target_depth, current_depth):
+	def max_val(self, env, player, target_depth, curr_depth):
 		opponent_position = player.opponent.position - 1
 		if(len(env.history[opponent_position]) > 0 and env.gameOver(env.history[opponent_position][len(env.history[opponent_position]) - 1], player.opponent.position)):
-			return -10000 * (target_depth - current_depth + 1)
+			return -6900 * (target_depth - curr_depth + 1)
 
-		if(target_depth == current_depth):
-			return self.eval(env.board, player)
+		if(target_depth == curr_depth):
+			return self.evaluation_func(env.board, player)
 
 		v = -math.inf
 		possible = env.topPosition >= 0
@@ -138,39 +138,31 @@ class minimaxAI(connect4Player):
 
 		for play in indices:
 			simulated_move = self.simulateMove(env.getEnv(), play, player)
-			result = self.min_val(simulated_move, player.opponent, target_depth, current_depth + 1)
+			result = self.min_val(simulated_move, player.opponent, target_depth, curr_depth + 1)
 			if(result > v):
 				v = result
 		
 		return v
 
-	def eval(self, board, player):
-		# weights = [
-		# 	[5, 10, 15, 20, 15, 10, 5],
-		# 	[10, 15, 20, 25, 20, 15, 10],
-		# 	[15, 20, 25, 30, 25, 20, 15],
-		# 	[15, 20, 25, 30, 25, 20, 15],
-		# 	[10, 15, 20, 25, 20, 15, 10],
-		# 	[5, 10, 15, 20, 15, 10, 5]
-		# ]
+	def evaluation_func(self, board, player):
 		weights = [
-      [10, 15, 20, 25, 20, 15, 10],
-      [15, 20, 30, 35, 30, 20, 15],
-      [20, 25, 30, 40, 30, 25, 20],
-      [20, 25, 30, 40, 30, 25, 20],
-      [20, 25, 35, 45, 35, 25, 20],
-      [15, 30, 45, 50, 45, 30, 15],
+			[3, 6, 9, 12, 9, 6, 3],
+			[6, 9, 12, 15, 12, 9, 6],
+			[9, 12, 15, 18, 15, 12, 9],
+			[9, 12, 15, 18, 15, 12, 9],
+			[6, 9, 12, 15, 12, 9, 6],
+			[6, 9, 12, 15, 12, 9, 6],
 		]
 
-		count = 0
-		for row in range(6):
-			for col in range(7):
+		score = 0
+		for row in range(ROW_COUNT):
+			for col in range(COLUMN_COUNT):
 				if(board[row][col] == player.position):
-					count += (weights[row][col])
+					score += (weights[row][col])
 				elif(board[row][col] == player.opponent.position):
-					count -= (weights[row][col])
+					score -= (weights[row][col])
 		
-		return count
+		return score
 
 
 class alphaBetaAI(connect4Player):
@@ -197,16 +189,16 @@ class alphaBetaAI(connect4Player):
 	def simulateMove(self, env, column_move, player):
 		env.board[env.topPosition[column_move]][column_move] = player.position
 		env.topPosition[column_move] -= 1
-		env.history[int(player.position) - 1].append(column_move)
+		env.history[player.position - 1].append(column_move)
 		return env
 
-	def min_val(self, env, player, target_depth, current_depth, alpha, beta):
+	def min_val(self, env, player, target_depth, curr_depth, alpha, beta):
 		opponent_position = player.opponent.position - 1
 		if(len(env.history[opponent_position]) > 0 and env.gameOver(env.history[opponent_position][len(env.history[opponent_position]) - 1], player.opponent.position)):
-			return 10000 * (target_depth - current_depth + 1)
+			return 6900 * (target_depth - curr_depth + 1)
 		
-		if(target_depth == current_depth):
-			return -1 * self.eval(env.board, player)
+		if(target_depth == curr_depth):
+			return -1 * self.evaluation_func(env.board, player)
 
 		v = math.inf
 		possible = env.topPosition >= 0
@@ -220,7 +212,7 @@ class alphaBetaAI(connect4Player):
 		random.shuffle(indices)
 		for play in indices:
 			simulated_move = self.simulateMove(env.getEnv(), play, player)
-			result = self.max_val(simulated_move, player.opponent, target_depth, current_depth + 1, alpha, beta)
+			result = self.max_val(simulated_move, player.opponent, target_depth, curr_depth + 1, alpha, beta)
 			if(result < v):
 				v = result
 
@@ -231,13 +223,13 @@ class alphaBetaAI(connect4Player):
 		
 		return v
 
-	def max_val(self, env, player, target_depth, current_depth, alpha, beta):
+	def max_val(self, env, player, target_depth, curr_depth, alpha, beta):
 		opponent_position = player.opponent.position - 1
 		if(len(env.history[opponent_position]) > 0 and env.gameOver(env.history[opponent_position][len(env.history[opponent_position]) - 1], player.opponent.position)):
-			return -10000 * (target_depth - current_depth + 1)
+			return -6900 * (target_depth - curr_depth + 1)
 
-		if(target_depth == current_depth):
-			return self.eval(env.board, player)
+		if(target_depth == curr_depth):
+			return self.evaluation_func(env.board, player)
 
 		v = -math.inf
 		possible = env.topPosition >= 0
@@ -250,7 +242,7 @@ class alphaBetaAI(connect4Player):
 		random.shuffle(indices)
 		for play in indices:
 			simulated_move = self.simulateMove(env.getEnv(), play, player)
-			result = self.min_val(simulated_move, player.opponent, target_depth, current_depth + 1, alpha, beta)
+			result = self.min_val(simulated_move, player.opponent, target_depth, curr_depth + 1, alpha, beta)
 			if(result > v):
 				v = result
 
@@ -261,82 +253,26 @@ class alphaBetaAI(connect4Player):
 		
 		return v
 
-	def eval(self, board, player):
+	def evaluation_func(self, board, player):
 		weights = [
-			[5, 10, 15, 20, 15, 10, 5],
-			[10, 15, 20, 25, 20, 15, 10],
-			[15, 20, 25, 30, 25, 20, 15],
-			[15, 20, 25, 30, 25, 20, 15],
-			[10, 15, 20, 25, 20, 15, 10],
-			[10, 15, 20, 25, 20, 15, 10],
+			[3, 6, 9, 12, 9, 6, 3],
+			[6, 9, 12, 15, 12, 9, 6],
+			[9, 12, 15, 18, 15, 12, 9],
+			[9, 12, 15, 18, 15, 12, 9],
+			[6, 9, 12, 15, 12, 9, 6],
+			[6, 9, 12, 15, 12, 9, 6],
 		]
 
-		count = 0
-		for row in range(6):
-			for col in range(7):
+		score = 0
+		for row in range(ROW_COUNT):
+			for col in range(COLUMN_COUNT):
 				if(board[row][col] == player.position):
-					count += (weights[row][col])
+					score += (weights[row][col])
 				elif(board[row][col] == player.opponent.position):
-					count -= (weights[row][col])
+					score -= (weights[row][col])
 		
-		return count
-	# 	score = 0
-
-	# 	center_array = []
-	# 	for i in list(board[:, 3]):
-	# 		center_array.append(i)
-	# 	center_count = center_array.count(player.position)
-	# 	score += center_count * 6
-
-	# 	# vertical 
-	# 	for col in range(7):
-	# 		col_array = [int(i) for i in list(board[:, col])]
-	# 		for row in range(3):
-	# 			arr = col_array[row:row + 4]
-	# 			score += self.get_score(arr, player.position, player.opponent.position)
-
-	# 	# horizontal 
-	# 	for row in range(6):
-	# 		row_array = [int(i) for i in list(board[row, :])]
-	# 		for col in range(4):
-	# 			arr = row_array[col:col + 4]
-	# 			score += self.get_score(arr, player.position, player.opponent.position)
-
-	# 	# downward diagonal
-	# 	for row in range(3):
-	# 		for col in range(4):
-	# 			arr = [board[row + 3 - i][col + i] for i in range(4)]
-	# 			score += self.get_score(arr, player.position, player.opponent.position)
-
-	# 	# upward diagonals
-	# 	for row in range(3):
-	# 		for col in range(4):
-	# 			arr = [board[row + i][col + i] for i in range(4)]
-	# 			score += self.get_score(arr, player.position, player.opponent.position)
-
-	# 	return score
-
-	# def get_score(self, arr, player, opponent):
-	# 	score = 0
-		
-	# 	if arr.count(player) == 4:
-	# 		score += 250
-	# 	elif arr.count(player) == 3 and arr.count(0) == 1:
-	# 		score += 25
-	# 	elif arr.count(player) == 2 and arr.count(0) == 2:
-	# 		score += 12
-
-	# 	if arr.count(opponent) == 4:
-	# 		score -= 250
-	# 	elif arr.count(opponent) == 3 and arr.count(0) == 1:
-	# 		score -= 25
-	# 	elif arr.count(opponent) == 2 and arr.count(0) == 2:
-	# 		score -= 12
-		
-
-	# 	return score
+		return score
  
-
 SQUARESIZE = 100
 BLUE = (0,0,255)
 BLACK = (0,0,0)
